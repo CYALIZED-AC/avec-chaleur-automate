@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eigenes Tool · Alternative zu n8n</title>
+<meta name="description" content="Eigenes maßgeschneidertes Tool statt n8n: Desktop-App oder Web-App als Automatisierungslösung im Enterprise-Kontext.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* CONCEPT BANNER */
+  .concept-banner {
+    background: var(--green-deep);
+    color: #e8f0eb;
+    border-radius: 12px;
+    padding: 26px 28px;
+    margin-bottom: 36px;
+    box-shadow: var(--sh-m);
+  }
+  .concept-banner .cb-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 8px;
+  }
+  .concept-banner .cb-title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .concept-banner .cb-body {
+    font-size: 14px;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  /* VARIANT CARDS */
+  .variant-card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--sh);
+    overflow: hidden;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .variant-card:hover { border-color: var(--bh); }
+  .variant-card.is-open { border-color: var(--green-m); box-shadow: var(--sh-m); }
+
+  .vc-header {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 20px 22px; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .vc-header:hover { background: var(--surface); }
+
+  .vc-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .vc-icon-desktop { background: var(--green-l); }
+  .vc-icon-web     { background: var(--blue-l); }
+
+  .vc-meta { flex: 1; min-width: 0; }
+  .vc-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .vc-title { font-size: 16px; font-weight: 700; }
+  .vc-tags  { display: flex; gap: 5px; flex-wrap: wrap; }
+  .vc-tag {
+    font-size: 9.5px; font-weight: 600; padding: 2px 7px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .vt-green { background: var(--green-l); color: var(--green); }
+  .vt-blue  { background: var(--blue-l);  color: var(--blue); }
+  .vt-amber { background: var(--amber-l); color: var(--amber); }
+  .vt-red   { background: var(--red-l);   color: var(--red); }
+
+  .vc-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  .vc-chevron {
+    width: 18px; height: 18px; flex-shrink: 0; color: var(--muted);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    margin-top: 12px;
+  }
+  .variant-card.is-open .vc-chevron { transform: rotate(180deg); }
+
+  .vc-body-wrap {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .variant-card.is-open .vc-body-wrap { grid-template-rows: 1fr; }
+  .vc-body-clip { overflow: hidden; }
+  .vc-body { border-top: 1px solid var(--border); padding: 20px 22px; }
+
+  /* FLOW DIAGRAM */
+  .flow-diagram {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  .flow-diagram .fd-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted); margin-bottom: 12px;
+  }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 6px;
+  }
+  .flow-step:last-child { margin-bottom: 0; }
+  .fs-arrow { color: var(--green); font-weight: 700; flex-shrink: 0; width: 20px; text-align: center; }
+  .fs-label { color: var(--text2); }
+  .fs-label strong { color: var(--text); font-weight: 700; }
+  .fs-loc {
+    font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 3px;
+    margin-left: 6px; white-space: nowrap;
+  }
+  .loc-local   { background: var(--green-l); color: var(--green); }
+  .loc-api     { background: var(--blue-l);  color: var(--blue); }
+  .loc-outlook { background: var(--amber-l); color: var(--amber); }
+
+  /* PRO/CON GRID */
+  .pc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .pc-block {}
+  .pc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .pc-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .pc-list li { font-size: 12.5px; color: var(--text2); padding-left: 16px; position: relative; line-height: 1.55; }
+  .pc-list li::before { position: absolute; left: 0; top: 2px; font-size: 10px; }
+  .pc-list li.y::before { content: '✓'; color: var(--green); }
+  .pc-list li.n::before { content: '✗'; color: var(--red); }
+  .pc-list li.w::before { content: '~'; color: var(--amber); }
+
+  /* COVERAGE */
+  .coverage { margin-bottom: 16px; }
+  .cov-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+  .cov-steps { display: flex; flex-direction: column; gap: 6px; }
+  .cov-step { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cov-step-label { font-size: 12px; color: var(--text2); }
+  .cov-chip {
+    font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .chip-auto   { background: var(--green-l); color: var(--green); }
+  .chip-semi   { background: var(--amber-l); color: var(--amber); }
+  .chip-manual { background: var(--red-l);   color: var(--red); }
+
+  .vc-note {
+    font-size: 12.5px; line-height: 1.6; padding: 12px 16px;
+    border-radius: 8px;
+  }
+  .vc-note.green { background: var(--green-l); color: var(--green); }
+  .vc-note.blue  { background: var(--blue-l);  color: var(--blue); }
+
+  /* SECURITY SECTION */
+  .security-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .sec-card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--sh);
+  }
+  .sec-card .sc-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+  }
+  .sc-icon {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; flex-shrink: 0;
+  }
+  .sc-yes { background: var(--green-l); color: var(--green); }
+  .sc-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .sec-card p { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  /* COMPARISON TABLE */
+  .cmp-table {
+    width: 100%;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--sh);
+    border-collapse: collapse;
+    font-size: 12.5px;
+    margin-bottom: 36px;
+  }
+  .cmp-table thead tr { background: var(--bg); border-bottom: 1px solid var(--border); }
+  .cmp-table thead th {
+    padding: 11px 14px; text-align: left;
+    font-size: 9.5px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .cmp-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .cmp-table tbody tr:last-child { border-bottom: none; }
+  .cmp-table tbody tr:hover { background: var(--surface); }
+  .cmp-table tbody td {
+    padding: 11px 14px; vertical-align: middle;
+    color: var(--text2); font-size: 11.5px; line-height: 1.45;
+  }
+  .cmp-table tbody td:first-child { font-weight: 700; color: var(--text); }
+
+  /* RECOMMENDATION */
+  .rec-box {
+    background: var(--green-deep);
+    color: #e8f0eb;
+    border-radius: 12px;
+    padding: 26px 28px;
+    box-shadow: var(--sh-m);
+  }
+  .rb-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; }
+  .rb-title {
+    font-family: 'Instrument Serif', serif; font-style: italic;
+    font-size: 20px; font-weight: 400; line-height: 1.3; margin-bottom: 12px;
+  }
+  .rec-steps { display: flex; flex-direction: column; gap: 12px; }
+  .rs { display: flex; gap: 12px; align-items: flex-start; }
+  .rs-num {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; background: rgba(255,255,255,0.12);
+    padding: 3px 10px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+  }
+  .rs-text { font-size: 13px; line-height: 1.65; opacity: 0.9; }
+  .rs-text strong { opacity: 1; }
+
+  @media(max-width:560px) {
+    .pc-grid { grid-template-columns: 1fr; }
+    .security-grid { grid-template-columns: 1fr; }
+    .cmp-table { font-size: 11px; }
+    .cmp-table thead th, .cmp-table tbody td { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">Avec <em>Chaleur</em></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Start</a></li>
+      <li><a href="vergleich.html">Vergleich</a></li>
+      <li><a href="technische-analyse.html">Technische Analyse</a></li>
+      <li><a href="enterprise.html">Enterprise</a></li>
+      <li><a href="eigenes-tool.html" class="is-active">Eigenes Tool</a></li>
+    </ul>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('is-open')" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="margin-bottom:36px">
+    <div class="eyebrow">Avec Chaleur · Eigenes Tool · Feb 2026</div>
+    <h1>Eigenes Tool statt<br><em>n8n</em></h1>
+    <p class="subtitle">Ein maßgeschneidertes Programm, das exakt euren 8-Schritte-Prozess automatisiert. Kein Drittanbieter-SaaS, keine IT-Freigabe, keine Kompromisse.</p>
+  </header>
+
+  <!-- CONCEPT -->
+  <div class="concept-banner">
+    <div class="cb-label">Die Idee</div>
+    <div class="cb-title">Warum ein eigenes Tool statt eines Workflow-Editors?</div>
+    <div class="cb-body">
+      n8n, Make und Zapier sind universelle Werkzeuge — sie können alles, müssen aber erst konfiguriert werden. Und im Enterprise-Kontext bedeutet jedes neue Tool: IT-Freigabe, Datenschutzprüfung, Lizenzbeschaffung. Ein <strong>eigenes Tool</strong> umgeht das komplett. Es ist kein SaaS-Produkt, kein Workflow-Editor — es ist ein Programm, das genau eine Sache tut: euren Gehaltsprozess automatisieren. Es spricht direkt mit den bereits genehmigten Systemen (Leapsome, Personio) und braucht keine zusätzliche Infrastruktur.
+    </div>
+  </div>
+
+  <!-- VARIANTS -->
+  <div class="sec-label">Zwei Varianten</div>
+
+  <!-- VARIANT 1: Desktop App -->
+  <div class="variant-card" id="var1">
+    <div class="vc-header" onclick="toggle('var1')">
+      <div class="vc-icon vc-icon-desktop">💻</div>
+      <div class="vc-meta">
+        <div class="vc-title-row">
+          <span class="vc-title">Desktop-App (portable .exe)</span>
+          <div class="vc-tags">
+            <span class="vc-tag vt-green">Kein Install</span>
+            <span class="vc-tag vt-green">Netzlaufwerk ✓</span>
+            <span class="vc-tag vt-green">Keine DPIA</span>
+            <span class="vc-tag vt-green">8/8 Schritte</span>
+          </div>
+        </div>
+        <div class="vc-desc">Ein portables Windows-Programm, das lokal auf dem Arbeitsrechner läuft. Keine Installation, kein Admin-Recht, keine Spuren im System. Daten verlassen nie den Rechner.</div>
+      </div>
+      <svg class="vc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="vc-body-wrap"><div class="vc-body-clip"><div class="vc-body">
+
+      <div class="flow-diagram">
+        <div class="fd-title">So funktioniert es — Schritt für Schritt</div>
+        <div class="flow-step"><span class="fs-arrow">1</span><span class="fs-label"><strong>Leapsome prüfen:</strong> App fragt per HTTPS die Leapsome API nach abgeschlossenen Reviews <span class="fs-loc loc-api">API-Call</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">2</span><span class="fs-label"><strong>Personio-Daten holen:</strong> Name, Adresse, Gehalt, Gesellschaft direkt per API <span class="fs-loc loc-api">API-Call</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">3</span><span class="fs-label"><strong>Word-Vorlage befüllen:</strong> Alle Daten + Unterschrift automatisch einsetzen <span class="fs-loc loc-local">Lokal</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">4</span><span class="fs-label"><strong>PDF generieren:</strong> Word → PDF, direkt auf dem Rechner <span class="fs-loc loc-local">Lokal</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">5</span><span class="fs-label"><strong>Freigabe an Harald:</strong> Strukturierte Mail über bestehendes Outlook mit Genehmigt/Abgelehnt-Buttons <span class="fs-loc loc-outlook">Outlook</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">6</span><span class="fs-label"><strong>Nach Freigabe — Personio Upload:</strong> PDF ins Mitarbeiterprofil hochladen + Compensation anlegen <span class="fs-loc loc-api">API-Call</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">7</span><span class="fs-label"><strong>Netzlaufwerk-Ablage:</strong> PDF automatisch in \\server\lohninfos\Gesellschaft\Jahr\Monat\ speichern <span class="fs-loc loc-local">Lokal</span></span></div>
+      </div>
+
+      <div class="pc-grid">
+        <div class="pc-block">
+          <div class="pc-label">Vorteile</div>
+          <ul class="pc-list">
+            <li class="y">Keine Installation — portabler Ordner mit .exe</li>
+            <li class="y">Kein Admin-Recht nötig</li>
+            <li class="y">Daten verlassen nie den Rechner (nur direkte API-Calls)</li>
+            <li class="y">Netzlaufwerk direkt beschreibbar (nativer Windows-Zugriff)</li>
+            <li class="y">Keine DPIA nötig — kein neuer Datenverarbeiter</li>
+            <li class="y">Outlook-Steuerung über offizielle Microsoft-Schnittstelle</li>
+            <li class="y">Alle Aktionen im lokalen Audit-Log protokolliert</li>
+            <li class="y">Auf USB-Stick oder Netzlaufwerk portabel mitnehmbar</li>
+          </ul>
+        </div>
+        <div class="pc-block">
+          <div class="pc-label">Einschränkungen</div>
+          <ul class="pc-list">
+            <li class="w">Muss einmalig auf den Rechner gebracht werden (Download oder Netzlaufwerk)</li>
+            <li class="w">PC muss eingeschaltet sein für automatische Scans</li>
+            <li class="w">API-Änderungen erfordern ein Update der App</li>
+            <li class="n">IT könnte .exe-Ausführung blockieren (selten bei portablen Apps)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="coverage">
+        <div class="cov-label">Automatisierungsabdeckung</div>
+        <div class="cov-steps">
+          <div class="cov-step"><span class="cov-step-label">01 · Leapsome Review-Scan</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">02 · Personio Daten abrufen</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">03–05 · Dokument generieren + speichern</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">06 · Freigabe Harald</span><span class="cov-chip chip-auto">Outlook Voting Buttons</span></div>
+          <div class="cov-step"><span class="cov-step-label">07 · Personio Upload + Compensation</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">08 · Netzlaufwerk-Ablage</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+        </div>
+      </div>
+
+      <div class="vc-note green">Stärkste Option wenn die .exe auf den Rechner gebracht werden kann — volle Automatisierung, null Datenschutz-Risiko, null laufende Kosten.</div>
+
+    </div></div></div>
+  </div>
+
+  <!-- VARIANT 2: Web App -->
+  <div class="variant-card" id="var2">
+    <div class="vc-header" onclick="toggle('var2')">
+      <div class="vc-icon vc-icon-web">🌐</div>
+      <div class="vc-meta">
+        <div class="vc-title-row">
+          <span class="vc-title">Web-App (Browser)</span>
+          <div class="vc-tags">
+            <span class="vc-tag vt-blue">Nur ein Link</span>
+            <span class="vc-tag vt-blue">Kein Download</span>
+            <span class="vc-tag vt-green">Unsichtbar für IT</span>
+            <span class="vc-tag vt-amber">7/8 Schritte</span>
+          </div>
+        </div>
+        <div class="vc-desc">Eine Web-App, gehostet auf Vercel oder Netlify. Der Benutzer öffnet einen Link im Browser — kein Download, keine Installation, kein sichtbarer Prozess auf dem Rechner.</div>
+      </div>
+      <svg class="vc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="vc-body-wrap"><div class="vc-body-clip"><div class="vc-body">
+
+      <div class="flow-diagram">
+        <div class="fd-title">So funktioniert es — Schritt für Schritt</div>
+        <div class="flow-step"><span class="fs-arrow">1</span><span class="fs-label"><strong>Leapsome prüfen:</strong> Server fragt per API nach Reviews — Ergebnis im Browser angezeigt <span class="fs-loc loc-api">Server → API</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">2</span><span class="fs-label"><strong>Personio-Daten holen:</strong> Server ruft Mitarbeiterdaten ab <span class="fs-loc loc-api">Server → API</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">3</span><span class="fs-label"><strong>Dokument generieren:</strong> Server befüllt Word-Vorlage und erzeugt PDF <span class="fs-loc loc-api">Server</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">4</span><span class="fs-label"><strong>Freigabe an Harald:</strong> Server sendet E-Mail direkt per SMTP/Microsoft Graph <span class="fs-loc loc-api">Server → E-Mail</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">5</span><span class="fs-label"><strong>Nach Freigabe — Personio Upload:</strong> Server lädt PDF hoch + legt Compensation an <span class="fs-loc loc-api">Server → API</span></span></div>
+        <div class="flow-step"><span class="fs-arrow">6</span><span class="fs-label"><strong>Netzlaufwerk-Ablage:</strong> PDF als Download-Button im Browser — Benutzer speichert manuell <span class="fs-loc loc-outlook">Manuell</span></span></div>
+      </div>
+
+      <div class="pc-grid">
+        <div class="pc-block">
+          <div class="pc-label">Vorteile</div>
+          <ul class="pc-list">
+            <li class="y">Kein Download, kein Install — nur ein Link im Browser</li>
+            <li class="y">Funktioniert auf jedem Gerät mit Browser</li>
+            <li class="y">Für IT nicht von einer normalen Website unterscheidbar</li>
+            <li class="y">Kein Windows-Prozess sichtbar</li>
+            <li class="y">Einfacher zu aktualisieren (Änderung am Server, fertig)</li>
+            <li class="y">Passwortgeschützt — nur autorisierte Benutzer</li>
+          </ul>
+        </div>
+        <div class="pc-block">
+          <div class="pc-label">Einschränkungen</div>
+          <ul class="pc-list">
+            <li class="n">Netzlaufwerk nicht direkt beschreibbar (nur Download)</li>
+            <li class="w">Daten fließen kurzzeitig durch den Hosting-Server (Vercel)</li>
+            <li class="w">DPIA-Grauzone: Vercel ist technisch ein Auftragsverarbeiter</li>
+            <li class="w">Braucht Internetzugang (immer gegeben auf Arbeitsrechnern)</li>
+            <li class="w">Hosting-Kosten: ~0–20€/mo (Vercel Free Tier oft ausreichend)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="coverage">
+        <div class="cov-label">Automatisierungsabdeckung</div>
+        <div class="cov-steps">
+          <div class="cov-step"><span class="cov-step-label">01 · Leapsome Review-Scan</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">02 · Personio Daten abrufen</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">03–05 · Dokument generieren + speichern</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">06 · Freigabe Harald</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">07 · Personio Upload + Compensation</span><span class="cov-chip chip-auto">Vollautomatisch</span></div>
+          <div class="cov-step"><span class="cov-step-label">08 · Netzlaufwerk-Ablage</span><span class="cov-chip chip-semi">Download + manuell speichern</span></div>
+        </div>
+      </div>
+
+      <div class="vc-note blue">Beste Option wenn kein Download/USB möglich ist. 7 von 8 Schritten vollautomatisch — nur die Netzlaufwerk-Ablage bleibt ein Klick.</div>
+
+    </div></div></div>
+  </div>
+
+  <!-- SECURITY -->
+  <div style="margin-bottom:36px">
+    <div class="sec-label">Sicherheit · Wie das Programm arbeitet</div>
+
+    <div class="security-grid">
+      <div class="sec-card">
+        <div class="sc-header">
+          <div class="sc-icon sc-yes">✓</div>
+          <span class="sc-name">Keine Roboter-Klicks</span>
+        </div>
+        <p>Das Programm bewegt keine Maus, klickt keine Buttons, tippt nicht in Fenster. Es kommuniziert direkt über offizielle Programmierschnittstellen (APIs) — verschlüsselt und im Hintergrund.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sc-header">
+          <div class="sc-icon sc-yes">✓</div>
+          <span class="sc-name">HTTPS-verschlüsselt</span>
+        </div>
+        <p>Alle API-Calls nutzen HTTPS/TLS — dieselbe Verschlüsselung wie wenn man manuell in Personio oder Leapsome arbeitet. Daten können nicht abgefangen werden.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sc-header">
+          <div class="sc-icon sc-yes">✓</div>
+          <span class="sc-name">Minimale Berechtigungen</span>
+        </div>
+        <p>Die API-Tokens haben exakt die Rechte die man ihnen gibt — z.B. nur Mitarbeiterdaten lesen und Compensation schreiben. Keine Admin-Rechte, kein Vollzugriff.</p>
+      </div>
+      <div class="sec-card">
+        <div class="sc-header">
+          <div class="sc-icon sc-yes">✓</div>
+          <span class="sc-name">Vollständiges Audit-Log</span>
+        </div>
+        <p>Jede Aktion wird protokolliert: wer hat wann was ausgelöst, welche API wurde aufgerufen, welches Dokument generiert. Nachvollziehbarer als manuelles Arbeiten.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="sec-label">Vergleich auf einen Blick</div>
+
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Kriterium</th>
+        <th>Desktop-App</th>
+        <th>Web-App</th>
+        <th>n8n (Cloud)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Installation nötig?</td>
+        <td>Nein (portabler Ordner)</td>
+        <td>Nein (nur ein Link)</td>
+        <td>Nein (Browser)</td>
+      </tr>
+      <tr>
+        <td>IT sieht</td>
+        <td>.exe-Prozess</td>
+        <td>Browser-Tab</td>
+        <td>Neues SaaS-Tool</td>
+      </tr>
+      <tr>
+        <td>Netzlaufwerk</td>
+        <td>✓ Direkt</td>
+        <td>✗ Nur Download</td>
+        <td>✗ Braucht SFTP</td>
+      </tr>
+      <tr>
+        <td>Daten fließen über</td>
+        <td>Nur eigener PC</td>
+        <td>Vercel (euer Account)</td>
+        <td>n8n Server (Dritte)</td>
+      </tr>
+      <tr>
+        <td>DPIA nötig?</td>
+        <td>Nein</td>
+        <td>Grauzone</td>
+        <td>Ja</td>
+      </tr>
+      <tr>
+        <td>IT-Freigabe</td>
+        <td>Evtl. für .exe</td>
+        <td>Keine</td>
+        <td>Ja (SaaS)</td>
+      </tr>
+      <tr>
+        <td>Automatisierung</td>
+        <td>8/8 Schritte</td>
+        <td>7/8 Schritte</td>
+        <td>8/8 Schritte</td>
+      </tr>
+      <tr>
+        <td>Laufende Kosten</td>
+        <td>0€</td>
+        <td>0–20€/mo</td>
+        <td>~24€/mo</td>
+      </tr>
+      <tr>
+        <td>Updates bei API-Änderung</td>
+        <td>Neue .exe verteilen</td>
+        <td>Server-Update (sofort)</td>
+        <td>Node-Update abwarten</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- RECOMMENDATION -->
+  <div class="rec-box">
+    <div class="rb-label">Empfehlung</div>
+    <div class="rb-title">Welche Variante wann?</div>
+    <div class="rec-steps">
+      <div class="rs">
+        <span class="rs-num">Desktop</span>
+        <span class="rs-text"><strong>Wenn die .exe auf den Rechner gebracht werden kann</strong> — per Download, Netzlaufwerk-Ordner oder USB. Volle Automatisierung aller 8 Schritte, stärkste Datenschutzposition, null laufende Kosten.</span>
+      </div>
+      <div class="rs">
+        <span class="rs-num">Web-App</span>
+        <span class="rs-text"><strong>Wenn nur der Browser nutzbar ist</strong> — kein Download, kein USB, kein Install erlaubt. 7 von 8 Schritten automatisch, nur Netzlaufwerk-Ablage bleibt ein Klick. Für IT unsichtbar.</span>
+      </div>
+      <div class="rs">
+        <span class="rs-num">Kombination</span>
+        <span class="rs-text"><strong>Beide Varianten schließen sich nicht aus.</strong> Die Web-App kann als Einstieg dienen (sofort nutzbar), die Desktop-App als Ziel-Lösung wenn der Rechner-Zugang geklärt ist.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('is-open');
+  }
+</script>
+</body>
+</html>

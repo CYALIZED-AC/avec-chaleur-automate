@@ -135,6 +135,7 @@
   .rank-b { background: var(--blue-l);  color: var(--blue); }
   .rank-c { background: var(--amber-l); color: var(--amber); }
   .rank-d { background: var(--red-l);   color: var(--red); }
+  .rank-e { background: var(--purple-l); color: var(--purple); }
 
   .oc-meta { flex: 1; min-width: 0; }
   .oc-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -300,6 +301,7 @@
       <li><a href="vergleich.html">Vergleich</a></li>
       <li><a href="technische-analyse.html">Technische Analyse</a></li>
       <li><a href="enterprise.html" class="is-active">Enterprise</a></li>
+      <li><a href="eigenes-tool.html">Eigenes Tool</a></li>
     </ul>
     <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('is-open')" aria-label="Menu">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -426,6 +428,20 @@
           <li class="yes">DSGVO by default</li>
           <li class="no">Benötigt Server-Zugang / IT-Abteilung</li>
           <li class="w">Einrichtung nur mit IT-Kooperation möglich</li>
+        </ul>
+      </div>
+
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-green">Maximal ✓</span>
+          <span class="gc-name">Eigenes Tool</span>
+        </div>
+        <ul>
+          <li class="yes">Desktop: Daten bleiben komplett lokal</li>
+          <li class="yes">Web: EU-Server (Vercel Frankfurt)</li>
+          <li class="yes">Kein Drittanbieter-SaaS</li>
+          <li class="yes">Nur direkte API-Calls per HTTPS</li>
+          <li class="yes">Keine IT-Freigabe erforderlich</li>
         </ul>
       </div>
     </div>
@@ -735,7 +751,81 @@
         </div></div></div></div>
       </div>
 
-      <!-- OPTION E: Ohne externes Tool -->
+      <!-- OPTION E: Eigenes Tool -->
+      <div class="option-card" id="optET">
+        <div class="oc-header" onclick="toggle('optET')">
+          <div class="oc-rank rank-e">E</div>
+          <div class="oc-meta">
+            <div class="oc-title-row">
+              <span class="oc-title">Eigenes Tool (Desktop-App / Web-App)</span>
+              <div class="oc-tags">
+                <span class="ot ot-green">Kein SaaS</span>
+                <span class="ot ot-green">Keine IT-Freigabe</span>
+                <span class="ot ot-blue">Desktop + Browser</span>
+                <span class="ot ot-green">Volle Kontrolle</span>
+              </div>
+            </div>
+            <div class="oc-desc">Statt SaaS-Tools ein maßgeschneidertes Programm: als portable Desktop-App (.exe) oder gehostete Web-App (nur Browser-Link). Kein Workflow-Editor — nur euer Prozess, direkt in Code.</div>
+            <div class="oc-meter-row">
+              <div class="oc-meter">
+                <span class="om-label">Automatisierung</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:95%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Datenschutz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:98%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">IT-Unabhängigkeit</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:95%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Einrichtungsaufwand</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:50%"></div></div>
+              </div>
+            </div>
+          </div>
+          <svg class="oc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="oc-body-wrap"><div class="oc-body-clip"><div class="oc-body"><div class="oc-body-inner">
+          <div class="oc-cols">
+            <div class="col-block">
+              <div class="col-label">Vorteile</div>
+              <ul class="col-list">
+                <li class="y">Kein Drittanbieter-SaaS — kein DPIA für externe Dienste</li>
+                <li class="y">Desktop-App: Netzlaufwerk-Zugriff direkt möglich</li>
+                <li class="y">Web-App: Nur ein Browser-Link — unsichtbar für IT</li>
+                <li class="y">Exakt auf den 8-Schritte-Prozess zugeschnitten</li>
+                <li class="y">API-Kommunikation per HTTPS — gleiche Sicherheit wie manuell</li>
+                <li class="y">Beide Varianten ohne IT-Freigabe einsetzbar</li>
+              </ul>
+            </div>
+            <div class="col-block">
+              <div class="col-label">Einschränkungen</div>
+              <ul class="col-list">
+                <li class="w">Desktop-App: Muss auf den Rechner gelangen (USB/Download)</li>
+                <li class="w">Web-App: Netzlaufwerk-Ablage nur per Download/SharePoint</li>
+                <li class="w">Initiale Entwicklung nötig (~2–3 Tage)</li>
+                <li class="w">Wartung bei API-Änderungen von Leapsome/Personio</li>
+              </ul>
+            </div>
+          </div>
+          <div class="automation-coverage">
+            <div class="ac-label">Automatisierungsabdeckung</div>
+            <div class="ac-steps">
+              <div class="ac-step"><span class="ac-step-label">01 · Leapsome Review-Scan</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">02 · Personio Daten abrufen</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">03–05 · Dokument generieren</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">06 · Freigabe Harald</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">07 · Personio Upload</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">08 · Netzlaufwerk-Ablage</span><span class="ac-chip chip-auto">Desktop: Auto · Web: Download</span></div>
+            </div>
+          </div>
+          <div class="oc-note green">Stärkste Option wenn IT-Freigabe für SaaS-Tools nicht möglich ist. Desktop-App deckt 8/8 Schritte ab, Web-App 7/8. <a href="eigenes-tool.html" style="color:inherit;text-decoration:underline">Details und Architektur →</a></div>
+        </div></div></div></div>
+      </div>
+
+      <!-- OPTION F: Ohne externes Tool -->
       <div class="option-card" id="optE">
         <div class="oc-header" onclick="toggle('optE')">
           <div class="oc-rank rank-d">D</div>
@@ -815,20 +905,24 @@
   <!-- RECOMMENDATION -->
   <div class="rec-box" style="margin-bottom:40px">
     <div class="rb-label">Empfehlung für diese Konstellation</div>
-    <div class="rb-title">Zweistufige Strategie: Jetzt + Mittelfristig</div>
-    <div class="rb-body">Im Enterprise-Kontext mit eingeschränktem Rechner ist der direkteste Weg eine Zwei-Stufen-Strategie.</div>
+    <div class="rb-title">Dreistufige Strategie: Jetzt + Schnell + Mittelfristig</div>
+    <div class="rb-body">Im Enterprise-Kontext mit eingeschränktem Rechner gibt es jetzt einen zusätzlichen Weg — ein maßgeschneidertes Tool, das ohne IT-Freigabe funktioniert.</div>
     <div class="rec-steps">
       <div class="rs">
         <span class="rs-num">Jetzt</span>
-        <span class="rs-text"><strong>Variante D sofort umsetzen:</strong> Leapsome CSV-Export einrichten, Personio-Gehaltsreport anlegen, Word-Vorlage mit Schnellbausteinen optimieren, Outlook-Mailvorlage für Harald erstellen. Kein Tool nötig, kein IT-Ticket. ~40% Zeitersparnis sofort.</span>
+        <span class="rs-text"><strong>Variante F sofort umsetzen:</strong> Leapsome CSV-Export einrichten, Personio-Gehaltsreport anlegen, Word-Vorlage mit Schnellbausteinen optimieren, Outlook-Mailvorlage für Harald erstellen. Kein Tool nötig, kein IT-Ticket. ~40% Zeitersparnis sofort.</span>
+      </div>
+      <div class="rs">
+        <span class="rs-num">Schnell</span>
+        <span class="rs-text"><strong>Variante E — Eigenes Tool:</strong> Desktop-App (wenn USB/Download möglich) oder Web-App (wenn nur Browser erlaubt). ~95% Automatisierung, keine IT-Freigabe nötig, keine DPIA für externe Dienste. <a href="eigenes-tool.html" style="color:inherit;text-decoration:underline">Details →</a></span>
       </div>
       <div class="rs">
         <span class="rs-num">Prüfen</span>
-        <span class="rs-text"><strong>Microsoft 365 Lizenz prüfen:</strong> Ist Power Automate Premium bereits in der Lizenz? Das klärt sich oft in 1 E-Mail an die IT. Falls ja, ist Variante A die beste Option — kein neuer Freigabeprozess nötig.</span>
+        <span class="rs-text"><strong>Microsoft 365 Lizenz prüfen:</strong> Ist Power Automate Premium bereits in der Lizenz? Falls ja, ist Variante A eine zusätzliche Enterprise-konforme Option.</span>
       </div>
       <div class="rs">
         <span class="rs-num">Mittelfristig</span>
-        <span class="rs-text"><strong>Variante A oder B+ umsetzen:</strong> Power Automate (falls lizenziert) oder n8n self-hosted mit IT-Kooperation. Beide liefern ~95% Automatisierungsabdeckung mit starker Datenschutzposition.</span>
+        <span class="rs-text"><strong>Variante A oder B+ als Ergänzung:</strong> Power Automate (falls lizenziert) oder n8n self-hosted mit IT-Kooperation — falls langfristig eine unternehmensweite Lösung gewünscht ist.</span>
       </div>
     </div>
   </div>
@@ -880,7 +974,15 @@
         <td>~20–40€</td>
       </tr>
       <tr>
-        <td>D · Ohne Tool (Bordmittel)</td>
+        <td>E · Eigenes Tool</td>
+        <td>Desktop + Web</td>
+        <td>★★★★★ Lokal/EU</td>
+        <td>~95%</td>
+        <td>Keine</td>
+        <td>~5–10€</td>
+      </tr>
+      <tr>
+        <td>F · Ohne Tool (Bordmittel)</td>
         <td>✓ Ja</td>
         <td>★★★★★ Intern</td>
         <td>~40%</td>
