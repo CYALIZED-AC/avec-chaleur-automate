@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prozessvergleich · Gehaltsänderung</title>
+<meta name="description" content="Interaktiver Vergleich: 8 Schritte der Gehaltsänderung — manuell, halbautomatisch und vollautomatisch mit n8n.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* TABS */
+  .tabs {
+    display:flex; background:var(--s2); border:1px solid var(--border);
+    border-radius:12px; padding:5px; margin-bottom:24px;
+    box-shadow:0 1px 4px rgba(0,0,0,.06);
+  }
+  .tab {
+    flex:1; padding:10px 8px 9px; border-radius:8px;
+    border:none; background:none; cursor:pointer; text-align:center;
+    transition: background .3s, box-shadow .3s;
+  }
+  .tab-label { font-family:'Cabinet Grotesk',sans-serif; font-size:13px; font-weight:700; display:block; line-height:1.2; margin-bottom:2px; transition:color .3s; color:var(--text2); }
+  .tab-sub   { font-size:11px; color:var(--muted); display:block; transition:color .3s; }
+
+  .tab[data-mode="0"].is-active                        { background:var(--red-l);   box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .tab[data-mode="0"].is-active .tab-label             { color:var(--red); }
+  .tab[data-mode="0"].is-active .tab-sub               { color:var(--red); opacity:.6; }
+  .tab[data-mode="1"].is-active                        { background:var(--amber-l); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .tab[data-mode="1"].is-active .tab-label             { color:var(--amber); }
+  .tab[data-mode="1"].is-active .tab-sub               { color:var(--amber); opacity:.6; }
+  .tab[data-mode="2"].is-active                        { background:var(--green-l); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .tab[data-mode="2"].is-active .tab-label             { color:var(--green); }
+  .tab[data-mode="2"].is-active .tab-sub               { color:var(--green); opacity:.6; }
+
+  /* LEGEND */
+  .legend {
+    display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px;
+    padding:10px 14px; background:var(--s2); border:1px solid var(--border); border-radius:8px;
+  }
+  .leg-item { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text2); }
+  .leg-dot  { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+
+  /* FLOW */
+  .flow { position:relative; }
+  .flow-spine {
+    position:absolute; left:19px; top:10px; bottom:10px;
+    width:2px; background:var(--border); border-radius:1px; z-index:0;
+  }
+
+  /* STEP */
+  .step-wrap { position:relative; margin-bottom:4px; }
+
+  .step-exp {
+    display:flex; gap:14px; position:relative; z-index:1;
+  }
+
+  .step-icon-col { flex-shrink:0; width:40px; z-index:1; }
+  .step-icon {
+    width:40px; height:40px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+    transition: background .4s, border-color .4s, transform .2s;
+  }
+  .step-exp:hover .step-icon { transform:scale(1.06); }
+
+  .step-card-col { flex:1; min-width:0; }
+  .step-card {
+    background:var(--s2); border:1px solid var(--border);
+    border-radius:10px; padding:13px 16px;
+    transition: background .4s, border-color .4s;
+    position:relative; overflow:hidden;
+  }
+  .step-card::before {
+    content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+    border-radius:10px 0 0 10px; transition:background .4s;
+  }
+
+  .step-head {
+    display:flex; align-items:center; gap:8px; margin-bottom:5px;
+    user-select:none;
+  }
+  .step-head.is-clickable { cursor:pointer; }
+  .step-head.is-clickable:hover .step-badge { opacity:.8; }
+
+  .step-num   { font-size:10px; font-weight:700; color:var(--muted); letter-spacing:.06em; flex-shrink:0; }
+  .step-badge {
+    font-size:9.5px; padding:2px 7px; border-radius:3px;
+    font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    margin-left:auto; flex-shrink:0; transition:background .4s, color .4s, opacity .2s;
+  }
+  .step-chevron {
+    width:16px; height:16px; flex-shrink:0; color:var(--muted);
+    transition: transform .35s cubic-bezier(.4,0,.2,1), color .2s;
+    display:none;
+  }
+  .step-chevron.is-shown  { display:block; }
+  .step-chevron.is-rotated { transform:rotate(180deg); color:var(--text2); }
+
+  .step-title { font-size:14px; font-weight:700; color:var(--text); line-height:1.3; margin-bottom:4px; transition:color .4s; }
+
+  .step-body-wrap {
+    overflow:hidden;
+    transition: max-height .45s cubic-bezier(.4,0,.2,1), opacity .35s;
+    max-height:200px; opacity:1;
+  }
+  .step-body-wrap.is-collapsed { max-height:0 !important; opacity:0; }
+
+  .step-body-text { font-size:12.5px; color:var(--text2); line-height:1.65; }
+  .step-tool      { display:inline-block; margin-top:6px; font-size:10.5px; color:var(--muted); font-weight:500; }
+
+  /* connector */
+  .connector {
+    padding-left:54px; height:22px; display:flex; align-items:center; overflow:hidden;
+    transition: height .45s cubic-bezier(.4,0,.2,1);
+  }
+  .connector.is-mini { height:10px; }
+  .connector span { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; font-weight:500; transition:opacity .35s; }
+  .connector.is-mini span { opacity:0; }
+
+  /* STATE COLORS */
+  .state-manual .step-icon         { background:var(--red-l);   border:1.5px solid var(--red-m); }
+  .state-manual .step-card         { border-color:var(--red-m); }
+  .state-manual .step-card::before { background:var(--red); }
+  .state-manual .step-badge        { background:var(--red-l);   color:var(--red); }
+
+  .state-semi .step-icon           { background:var(--amber-l); border:1.5px solid var(--amber-m); }
+  .state-semi .step-card           { border-color:var(--amber-m); }
+  .state-semi .step-card::before   { background:var(--amber); }
+  .state-semi .step-badge          { background:var(--amber-l); color:var(--amber); }
+
+  .state-auto .step-icon           { background:var(--green-l); border:1.5px solid var(--green-m); }
+  .state-auto .step-card           { border-color:var(--green-m); }
+  .state-auto .step-card::before   { background:var(--green); }
+  .state-auto .step-badge          { background:var(--green-l); color:var(--green); }
+
+  .state-skip .step-icon           { background:var(--bg); border:1.5px solid var(--border); opacity:.4; }
+  .state-skip .step-card           { background:var(--bg); border-color:var(--border); }
+  .state-skip .step-card::before   { background:transparent; }
+  .state-skip .step-badge          { background:var(--border); color:var(--muted); }
+  .state-skip .step-title          { text-decoration:line-through; color:var(--muted); }
+  .state-skip .step-body-text      { opacity:.5; }
+  .state-skip .step-tool           { opacity:.4; }
+
+  /* CHECK NODES (only visible in Tab 3) */
+  .check-node {
+    display: flex; gap: 14px; align-items: center;
+    padding-left: 0;
+    overflow: hidden;
+    max-height: 0; opacity: 0;
+    transition: max-height 0.45s cubic-bezier(.4,0,.2,1), opacity 0.35s ease, margin 0.35s;
+    margin-bottom: 0;
+    position: relative; z-index: 1;
+  }
+  .check-node.is-visible {
+    max-height: 60px; opacity: 1;
+    margin-bottom: 4px;
+  }
+  .check-icon-col { flex-shrink:0; width:40px; display:flex; justify-content:center; }
+  .check-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--green-l); border: 1.5px solid var(--green-m);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .check-line {
+    flex:1; height:1px; background: var(--green-m);
+    position: relative;
+  }
+  .check-label {
+    font-size: 10.5px; font-weight: 600; color: var(--green);
+    letter-spacing: 0.03em; line-height: 1.4;
+  }
+  .check-connector {
+    padding-left: 54px; height: 0; overflow: hidden; opacity: 0;
+    display: flex; align-items: center;
+    transition: height 0.45s cubic-bezier(.4,0,.2,1), opacity 0.35s ease;
+  }
+  .check-connector.is-visible { height: 16px; opacity: 1; }
+  .check-connector span { font-size: 9px; color: var(--green); opacity: 0.5; text-transform: uppercase; letter-spacing: .07em; }
+
+  /* FLASH ANIMATION */
+  @keyframes cardPulse {
+    0%   { box-shadow:none; }
+    30%  { box-shadow:0 0 0 3px var(--pc, rgba(138,98,0,.28)); }
+    100% { box-shadow:none; }
+  }
+  @keyframes iconJolt {
+    0%   { transform:scale(1); }
+    25%  { transform:scale(1.18); }
+    55%  { transform:scale(0.93); }
+    80%  { transform:scale(1.05); }
+    100% { transform:scale(1); }
+  }
+  .step-flash .step-card { animation:cardPulse .5s ease-out both; }
+  .step-flash .step-icon { animation:iconJolt .38s ease-out both; }
+
+  /* SUMMARY */
+  .summary {
+    margin-top:24px; background:var(--s2); border:1px solid var(--border);
+    border-radius:10px; padding:18px 20px;
+    display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:24px;
+  }
+  .sum-stat { display:flex; flex-direction:column; gap:4px; }
+  .sum-label { font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+  .sum-value { font-size:26px; font-weight:800; line-height:1; letter-spacing:-.02em; transition:color .4s; }
+  .sum-desc  { font-size:13px; color:var(--text2); line-height:1.6; }
+  .sum-desc strong { font-weight:700; color:var(--text); }
+
+  /* ERROR RATE BAR */
+  .error-section {
+    margin-top:20px; background:var(--s2); border:1px solid var(--border);
+    border-radius:10px; padding:16px 20px;
+  }
+  .error-label {
+    font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted);
+    margin-bottom:14px; display:flex; align-items:center; gap:10px;
+  }
+  .error-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .error-row {
+    display:flex; align-items:center; gap:12px; margin-bottom:10px;
+  }
+  .error-row:last-child { margin-bottom:0; }
+  .error-name { font-size:12px; font-weight:600; color:var(--text2); width:120px; flex-shrink:0; }
+  .error-bar-wrap { flex:1; height:8px; background:var(--bg); border-radius:4px; overflow:hidden; }
+  .error-bar { height:100%; border-radius:4px; transition: width 1s cubic-bezier(.4,0,.2,1); }
+  .error-pct { font-size:12px; font-weight:700; width:36px; text-align:right; flex-shrink:0; }
+
+  /* RESPONSIVE */
+  @media(max-width:560px) {
+    .tabs { flex-direction:column; gap:4px; }
+    .tab  { text-align:left; padding:10px 12px; }
+    .tab-label { display:inline; margin-right:6px; }
+    .tab-sub   { display:inline; }
+    .legend    { gap:10px; }
+    .summary   { grid-template-columns:1fr 1fr; }
+    .sum-desc  { grid-column:1/-1; }
+    .error-name { width:90px; font-size:11px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">Avec <em>Chaleur</em></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Start</a></li>
+      <li><a href="vergleich.html" class="is-active">Vergleich</a></li>
+      <li><a href="technische-analyse.html">Technische Analyse</a></li>
+      <li><a href="enterprise.html">Enterprise</a></li>
+    </ul>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('is-open')" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header style="margin-bottom:32px">
+    <div class="eyebrow">Avec Chaleur · Prozessvergleich · Feb 2026</div>
+    <h1>Was ändert sich bei einer<br><em>Gehaltsanpassung?</em></h1>
+    <p class="subtitle">Dieselben 8 Schritte. Wähle einen Tab um zu sehen was bleibt, was vereinfacht wird und was komplett wegfällt.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab is-active" data-mode="0" onclick="setMode(0)">
+      <span class="tab-label">Heute</span>
+      <span class="tab-sub">Alles manuell</span>
+    </button>
+    <button class="tab" data-mode="1" onclick="setMode(1)">
+      <span class="tab-label">Ohne neues Tool</span>
+      <span class="tab-sub">Halbautomatisch</span>
+    </button>
+    <button class="tab" data-mode="2" onclick="setMode(2)">
+      <span class="tab-label">Mit n8n</span>
+      <span class="tab-sub">Vollautomatisch</span>
+    </button>
+  </div>
+
+  <div class="legend">
+    <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.1em">Legende</span>
+    <span class="leg-item"><span class="leg-dot" style="background:var(--red)"></span>Manuell</span>
+    <span class="leg-item"><span class="leg-dot" style="background:var(--amber)"></span>Vereinfacht</span>
+    <span class="leg-item"><span class="leg-dot" style="background:var(--green)"></span>Automatisch</span>
+    <span class="leg-item"><span class="leg-dot" style="background:var(--border);border:1px solid var(--bh)"></span>Entfällt</span>
+  </div>
+
+  <div class="flow">
+    <div class="flow-spine"></div>
+    <div id="flow-steps"></div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <div class="sum-stat">
+      <span class="sum-label">Manuell</span>
+      <span class="sum-value" id="sum-count" style="color:var(--red)">8/8</span>
+    </div>
+    <div class="sum-stat">
+      <span class="sum-label">Zeitaufwand</span>
+      <span class="sum-value" id="sum-time" style="color:var(--red)">~45 min</span>
+    </div>
+    <div class="sum-desc" id="sum-desc">
+      <strong>Heute:</strong> Alles von Hand, 5 verschiedene Programme, viele Fehlerquellen.
+    </div>
+  </div>
+
+  <!-- ERROR RATE -->
+  <div class="error-section">
+    <div class="error-label">Fehlerquote im Vergleich</div>
+
+    <div class="error-row">
+      <span class="error-name">Heute</span>
+      <div class="error-bar-wrap"><div class="error-bar" id="err0" style="width:85%;background:var(--red)"></div></div>
+      <span class="error-pct" id="errpct0" style="color:var(--red)">~85%</span>
+    </div>
+    <div class="error-row">
+      <span class="error-name">Ohne Tool</span>
+      <div class="error-bar-wrap"><div class="error-bar" id="err1" style="width:40%;background:var(--amber)"></div></div>
+      <span class="error-pct" id="errpct1" style="color:var(--amber)">~40%</span>
+    </div>
+    <div class="error-row">
+      <span class="error-name">Mit n8n</span>
+      <div class="error-bar-wrap"><div class="error-bar" id="err2" style="width:5%;background:var(--green)"></div></div>
+      <span class="error-pct" id="errpct2" style="color:var(--green)">~5%</span>
+    </div>
+
+    <p style="font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.6">
+      Fehler entstehen heute vor allem durch manuelles Eintippen (falsches Gehalt, falscher Name, falsche Gesellschaft), vergessene Schritte (Netzlaufwerk-Ablage) und fehlende Bestätigungen (kein Status nach Haralds Freigabe). Jeder halbautomatische Schritt reduziert die Wahrscheinlichkeit eines Fehlers an dieser Stelle um etwa 60 Prozent.
+    </p>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────
+const STEPS = [
+  {
+    id:1, icon:'👁',
+    title:['Reviews einzeln durchklicken','Täglicher Export statt manuell klicken','Computer prüft täglich selbst'],
+    badge:['Manuell','Halbautomatisch','Vollautomatisch'],
+    body:[
+      'In Leapsome jeden Mitarbeiter einzeln anklicken und nachschauen ob eine Gehaltsnotiz hinterlassen wurde. Es gibt keine automatische Benachrichtigung.',
+      'Leapsome kann alle abgeschlossenen Reviews als Liste exportieren. So sieht man auf einen Blick wer eine Gehaltsnotiz hat, ohne jeden Mitarbeiter einzeln aufzuklicken. Besonders sinnvoll wenn mehrere Personen gleichzeitig betroffen sind.',
+      'n8n schaut jeden Morgen automatisch in Leapsome nach abgeschlossenen Reviews. Wenn eine Gehaltsnotiz gefunden wird startet der gesamte Prozess von allein.'
+    ],
+    tool:['Leapsome','Leapsome Export Funktion','n8n + Leapsome'],
+    state:['manual','semi','auto'],
+    collapse:[false,false,true]
+  },
+  {
+    id:2, icon:'🔍',
+    title:['Aktuelles Gehalt nachschlagen','Direkt zum Mitarbeiterprofil springen','Alle Daten werden automatisch geholt'],
+    badge:['Manuell','Halbautomatisch','Vollautomatisch'],
+    body:[
+      'In Personio den Mitarbeiter suchen und das aktuelle Gehalt herausschreiben oder im Kopf behalten.',
+      'Kein Export nötig. Stattdessen: einen gespeicherten Direktlink zum Mitarbeiterprofil in Personio anlegen. Ein Klick und man ist sofort beim richtigen Gehalt, ohne jedes Mal neu zu suchen. Bei einer Einzelperson spart das mehr Zeit als ein CSV Export.',
+      'n8n ruft sofort alle Infos aus Personio ab: Name, Adresse, aktuelles Gehalt, Gesellschaft. Kein Programmwechsel nötig.'
+    ],
+    tool:['Personio','Personio (gespeicherter Direktlink)','n8n + Personio'],
+    state:['manual','semi','auto'],
+    collapse:[false,false,true]
+  },
+  {
+    id:3, icon:'📁',
+    title:['Richtige Word-Vorlage suchen','Vorlage mit Eingabefeldern öffnen','Vorlage suchen'],
+    badge:['Manuell','Vereinfacht','Entfällt'],
+    body:[
+      'Im Netzlaufwerk die passende Word-Vorlage für die jeweilige Gesellschaft suchen und öffnen.',
+      'Die Vorlage wird einmalig mit klaren Eingabefeldern eingerichtet. Statt freiem Tippen klickt man nur noch die Felder an.',
+      'n8n weiß anhand der Gesellschaft selbst welche Vorlage verwendet werden muss. Dieser Schritt existiert nicht mehr.'
+    ],
+    tool:['Netzlaufwerk','Netzlaufwerk einmalig eingerichtet','Entfällt komplett'],
+    state:['manual','semi','skip'],
+    collapse:[false,false,true]
+  },
+  {
+    id:4, icon:'✏️',
+    title:['Dokument von Hand ausfüllen','Dokument ausfüllen vereinfacht','Dokument wird selbst erstellt'],
+    badge:['Manuell','Vereinfacht','Vollautomatisch'],
+    body:[
+      'Name, Adresse, altes Gehalt, neues Gehalt, Datum alles eintippen. Differenz mit dem Taschenrechner ausrechnen. Unterschrift einfügen.',
+      'Daten aus dem Personio Export kopieren statt eintippen. Eine Excel-Formel berechnet die Differenz automatisch, kein Taschenrechner mehr.',
+      'n8n füllt das Dokument vollständig aus: Name, Adresse, altes Gehalt, neues Gehalt, Differenz, Datum, Unterschrift. Fertig in Sekunden.'
+    ],
+    tool:['Word + Taschenrechner','Word + Excel-Formel','n8n + Vorlage'],
+    state:['manual','semi','auto'],
+    collapse:[false,false,true]
+  },
+  {
+    id:5, icon:'💾',
+    title:['Zweimal manuell speichern','Zweimal manuell speichern bleibt','Speichern entfällt komplett'],
+    badge:['Manuell','Manuell','Entfällt'],
+    body:[
+      'Datei als Word speichern, dann nochmal als PDF in einem anderen Ordner. Zwei separate Speichervorgänge an zwei verschiedenen Orten.',
+      'Hier ändert sich ohne externes Tool nichts. Das manuelle Speichern an zwei Orten bleibt bestehen.',
+      'n8n speichert das PDF automatisch an allen nötigen Orten gleichzeitig. Dieser Schritt fällt komplett weg.'
+    ],
+    tool:['Netzlaufwerk','Netzlaufwerk','Entfällt komplett'],
+    state:['manual','manual','skip'],
+    collapse:[false,false,true]
+  },
+  {
+    id:6, icon:'✉️',
+    title:['E-Mail an Harald schreiben und warten','Vorlage-E-Mail an Harald','Harald drückt auf Freigeben'],
+    badge:['Manuell','Vorlage-Mail','1 Klick Harald'],
+    body:[
+      'Informelle E-Mail formulieren, alle Infos nochmal eintippen, PDF anhängen. Dann warten bis Harald antwortet, kein klarer Status.',
+      'Eine fertige Outlook-Vorlage öffnen. Alle Infos sind schon drin, man füllt nur Name und Gehaltszahlen ein. Kein freies Formulieren mehr.',
+      'Harald bekommt eine strukturierte Nachricht mit allen Infos und zwei Buttons: Freigeben oder Ablehnen. Ein Klick und der Rest läuft automatisch.'
+    ],
+    tool:['Outlook','Outlook-Vorlage','Harald (1 Klick)'],
+    state:['manual','semi','auto'],
+    collapse:[false,false,false]
+  },
+  {
+    id:7, icon:'📤',
+    title:['PDF in Personio hochladen','PDF in Personio hochladen bleibt','PDF-Upload entfällt'],
+    badge:['Manuell','Manuell','Entfällt'],
+    body:[
+      'Mitarbeiterprofil in Personio öffnen, PDF manuell hochladen, Mitarbeiter benachrichtigen.',
+      'Bleibt manuell. Ohne Automatisierungstool muss dieser Schritt weiterhin von Hand gemacht werden.',
+      'Sobald Harald freigibt lädt n8n das PDF automatisch in Personio hoch und benachrichtigt den Mitarbeiter.'
+    ],
+    tool:['Personio','Personio','Entfällt komplett'],
+    state:['manual','manual','skip'],
+    collapse:[false,false,true]
+  },
+  {
+    id:8, icon:'🗂',
+    title:['Im richtigen Ordner ablegen','Ablegen mit Checkliste','Ablage entfällt komplett'],
+    badge:['Manuell','Manuell mit Checkliste','Entfällt'],
+    body:[
+      'PDF in den Lohninfos-Ordner legen: Gesellschaft, Jahr, Monat. Wird oft vergessen wenn mehrere Änderungen gleichzeitig anfallen.',
+      'Bleibt manuell, aber eine fest hinterlegte Checkliste stellt sicher dass dieser Schritt nicht mehr vergessen wird.',
+      'n8n legt das PDF automatisch im richtigen Ordner ab: Gesellschaft, Jahr, Monat. Kann nie mehr vergessen werden.'
+    ],
+    tool:['Netzlaufwerk','Netzlaufwerk + Checkliste','Entfällt komplett'],
+    state:['manual','manual','skip'],
+    collapse:[false,false,true]
+  }
+];
+
+const SUMMARY = [
+  { count:'8/8', time:'~45 min', color:'var(--red)',
+    desc:'<strong>Heute:</strong> Alles von Hand. 5 verschiedene Programme. Viele Fehlerquellen, ein falsches Gehalt eingetippt und das Dokument muss komplett neu gemacht werden.' },
+  { count:'5/8', time:'~20 min', color:'var(--amber)',
+    desc:'<strong>Ohne neues Tool:</strong> Sofort umsetzbar, keine IT-Freigabe nötig. 3 Schritte deutlich vereinfacht. Guter Zwischenschritt.' },
+  { count:'1/8', time:'~2 min',  color:'var(--green)',
+    desc:'<strong>Mit n8n:</strong> 4 Schritte fallen komplett weg. Nur 1 menschliche Entscheidung bleibt: Haralds Freigabe per Klick.' }
+];
+
+const PULSE = { manual:'rgba(181,55,42,.28)', semi:'rgba(138,98,0,.28)', auto:'rgba(58,99,81,.28)', skip:'rgba(0,0,0,.08)' };
+
+// ── BUILD DOM ─────────────────────────────────
+const container = document.getElementById('flow-steps');
+
+const CHECKS = {
+  2: 'Automatischer Prüfprozess: Gehalt, Name und Gesellschaft auf Vollständigkeit geprüft',
+  4: 'Automatischer Prüfprozess: Alle Felder befüllt, Differenzberechnung stimmt',
+  6: 'Automatischer Prüfprozess: Freigabe protokolliert mit Zeitstempel und Genehmiger',
+  7: 'Automatischer Prüfprozess: Upload in Personio erfolgreich bestätigt',
+};
+
+STEPS.forEach((s, idx) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'step-wrap';
+  wrap.innerHTML = `
+    <div class="step-exp state-manual" id="exp${s.id}">
+      <div class="step-icon-col">
+        <div class="step-icon" id="icon${s.id}">${s.icon}</div>
+      </div>
+      <div class="step-card-col">
+        <div class="step-card" id="card${s.id}">
+          <div class="step-head" id="head${s.id}">
+            <span class="step-num">SCHRITT ${s.id}</span>
+            <span class="step-badge" id="badge${s.id}">${s.badge[0]}</span>
+            <svg class="step-chevron" id="chev${s.id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+          <div class="step-title" id="title${s.id}">${s.title[0]}</div>
+          <div class="step-body-wrap" id="body${s.id}">
+            <div class="step-body-text" id="bodytext${s.id}">${s.body[0]}</div>
+            <div class="step-tool" id="tool${s.id}">${s.tool[0]}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  container.appendChild(wrap);
+
+  document.getElementById('head' + s.id).addEventListener('click', () => toggleBody(s.id));
+
+  if (idx < STEPS.length - 1) {
+    if (CHECKS[s.id]) {
+      const checkConn = document.createElement('div');
+      checkConn.className = 'check-connector';
+      checkConn.id = 'checkconn' + s.id;
+      checkConn.innerHTML = '<span>↓</span>';
+      container.appendChild(checkConn);
+
+      const checkNode = document.createElement('div');
+      checkNode.className = 'check-node';
+      checkNode.id = 'check' + s.id;
+      checkNode.innerHTML = `
+        <div class="check-icon-col"><div class="check-dot">✓</div></div>
+        <div class="check-line"></div>
+        <span class="check-label">${CHECKS[s.id]}</span>`;
+      container.appendChild(checkNode);
+    }
+
+    const conn = document.createElement('div');
+    conn.className = 'connector';
+    conn.id = 'conn' + s.id;
+    conn.innerHTML = '<span>↓</span>';
+    container.appendChild(conn);
+  }
+});
+
+// ── TOGGLE BODY (accordion) ───────────────────
+function toggleBody(id) {
+  const head = document.getElementById('head' + id);
+  if (!head.classList.contains('is-clickable')) return;
+  const bodyWrap = document.getElementById('body' + id);
+  const chev = document.getElementById('chev' + id);
+  const isCollapsed = bodyWrap.classList.contains('is-collapsed');
+  bodyWrap.classList.toggle('is-collapsed', !isCollapsed);
+  bodyWrap.classList.contains('is-collapsed')
+    ? chev.classList.remove('is-rotated')
+    : chev.classList.add('is-rotated');
+}
+
+// ── SET MODE ──────────────────────────────────
+let currentMode = 0;
+
+function setMode(mode) {
+  if (mode === currentMode) return;
+  const prev = currentMode;
+  currentMode = mode;
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('is-active', parseInt(t.dataset.mode) === mode);
+  });
+
+  STEPS.forEach(s => {
+    const state    = s.state[mode];
+    const prevState = s.state[prev];
+    const collapse  = s.collapse[mode];
+    const wasColl   = s.collapse[prev];
+    const changed   = state !== prevState;
+
+    const expEl    = document.getElementById('exp'   + s.id);
+    const bodyWrap = document.getElementById('body'  + s.id);
+    const chev     = document.getElementById('chev'  + s.id);
+    const head     = document.getElementById('head'  + s.id);
+    const connEl   = document.getElementById('conn'  + s.id);
+
+    expEl.className = 'step-exp state-' + state;
+
+    document.getElementById('badge'    + s.id).textContent = s.badge[mode];
+    document.getElementById('title'    + s.id).textContent = s.title[mode];
+    document.getElementById('bodytext' + s.id).textContent = s.body[mode];
+    document.getElementById('tool'     + s.id).textContent = s.tool[mode];
+
+    if (collapse) {
+      chev.classList.add('is-shown');
+      chev.classList.remove('is-rotated');
+      head.classList.add('is-clickable');
+      bodyWrap.classList.add('is-collapsed');
+      if (connEl) connEl.classList.add('is-mini');
+    } else {
+      chev.classList.remove('is-shown', 'is-rotated');
+      head.classList.remove('is-clickable');
+      bodyWrap.classList.remove('is-collapsed');
+      if (connEl) connEl.classList.remove('is-mini');
+    }
+
+    if (changed && !collapse && !wasColl) {
+      expEl.style.setProperty('--pc', PULSE[state] || 'rgba(0,0,0,.1)');
+      expEl.classList.remove('step-flash');
+      void expEl.offsetWidth;
+      expEl.classList.add('step-flash');
+      setTimeout(() => expEl.classList.remove('step-flash'), 600);
+    }
+  });
+
+  Object.keys(CHECKS).forEach(id => {
+    const cn = document.getElementById('check' + id);
+    const cc = document.getElementById('checkconn' + id);
+    if (cn) cn.classList.toggle('is-visible', mode === 2);
+    if (cc) cc.classList.toggle('is-visible', mode === 2);
+  });
+
+  const sd = SUMMARY[mode];
+  const cnt = document.getElementById('sum-count');
+  const tim = document.getElementById('sum-time');
+  cnt.textContent = sd.count; cnt.style.color = sd.color;
+  tim.textContent = sd.time;  tim.style.color = sd.color;
+  document.getElementById('sum-desc').innerHTML = sd.desc;
+}
+</script>
+</body>
+</html>

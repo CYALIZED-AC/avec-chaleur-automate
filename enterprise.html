@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise-Analyse · Automatisierung</title>
+<meta name="description" content="Automatisierungsvarianten im Enterprise-Kontext: Datenschutz, DSGVO, Power Automate, n8n, Make.com und mehr.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* CONTEXT BANNER */
+  .context-banner {
+    background: var(--green-deep);
+    color: #e8f0eb;
+    border-radius: 12px;
+    padding: 26px 28px;
+    margin-bottom: 36px;
+    box-shadow: var(--sh-m);
+  }
+  .context-banner .cb-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 8px;
+  }
+  .context-banner .cb-title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .context-banner .cb-body {
+    font-size: 14px;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  /* CONSTRAINTS */
+  .constraint-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    margin-bottom: 36px;
+  }
+  .ctag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 600;
+  }
+  .ctag-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  }
+  .ct-red    { background: var(--red-l); color: var(--red); }
+  .ct-red .ctag-dot    { background: var(--red); }
+  .ct-amber  { background: var(--amber-l); color: var(--amber); }
+  .ct-amber .ctag-dot  { background: var(--amber); }
+  .ct-green  { background: var(--green-l); color: var(--green); }
+  .ct-green .ctag-dot  { background: var(--green); }
+
+  /* GDPR GRID */
+  .gdpr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .gdpr-card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--sh);
+  }
+  .gc-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .gc-badge {
+    font-size: 9.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .gb-green { background: var(--green-l); color: var(--green); }
+  .gb-amber { background: var(--amber-l); color: var(--amber); }
+  .gc-name  { font-size: 13px; font-weight: 700; color: var(--text); }
+
+  .gdpr-card ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .gdpr-card li {
+    font-size: 11.5px; color: var(--text2); padding-left: 15px;
+    position: relative; line-height: 1.5;
+  }
+  .gdpr-card li::before { position: absolute; left: 0; top: 2px; font-size: 10px; }
+  .gdpr-card li.yes::before { content: '✓'; color: var(--green); }
+  .gdpr-card li.no::before  { content: '✗'; color: var(--red); }
+  .gdpr-card li.w::before   { content: '~'; color: var(--amber); }
+
+  .gdpr-note {
+    background: var(--amber-l);
+    border: 1px solid var(--amber-m);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.65;
+    margin-bottom: 36px;
+  }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 12px; }
+
+  .option-card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--sh);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .option-card:hover { border-color: var(--bh); }
+  .option-card.is-open { border-color: var(--green-m); box-shadow: var(--sh-m); }
+
+  .oc-header {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 18px 20px; cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .oc-header:hover { background: var(--surface); }
+
+  .oc-rank {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; flex-shrink: 0;
+  }
+  .rank-a { background: var(--green-l); color: var(--green); }
+  .rank-b { background: var(--blue-l);  color: var(--blue); }
+  .rank-c { background: var(--amber-l); color: var(--amber); }
+  .rank-d { background: var(--red-l);   color: var(--red); }
+
+  .oc-meta { flex: 1; min-width: 0; }
+  .oc-title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .oc-title { font-size: 15px; font-weight: 700; }
+  .oc-tags  { display: flex; gap: 5px; flex-wrap: wrap; }
+  .ot {
+    font-size: 9.5px; font-weight: 600; padding: 2px 7px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .ot-green { background: var(--green-l); color: var(--green); }
+  .ot-blue  { background: var(--blue-l);  color: var(--blue); }
+  .ot-amber { background: var(--amber-l); color: var(--amber); }
+  .ot-red   { background: var(--red-l);   color: var(--red); }
+
+  .oc-desc { font-size: 12.5px; color: var(--text2); line-height: 1.6; margin-bottom: 10px; }
+
+  .oc-meter-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .oc-meter { flex: 1; min-width: 120px; }
+  .om-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 4px; }
+  .om-bar-wrap { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .om-bar { height: 100%; border-radius: 3px; }
+  .bar-green { background: var(--green); }
+  .bar-amber { background: var(--amber); }
+  .bar-blue  { background: var(--blue); }
+  .bar-red   { background: var(--red); }
+
+  .oc-chevron {
+    width: 18px; height: 18px; flex-shrink: 0; color: var(--muted);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    margin-top: 8px;
+  }
+  .option-card.is-open .oc-chevron { transform: rotate(180deg); }
+
+  .oc-body-wrap {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(.4,0,.2,1);
+  }
+  .option-card.is-open .oc-body-wrap { grid-template-rows: 1fr; }
+  .oc-body-clip { overflow: hidden; }
+  .oc-body { border-top: 1px solid var(--border); }
+  .oc-body-inner { padding: 18px 20px; }
+
+  .oc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 16px; }
+  .col-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
+  .col-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+  .col-list li { font-size: 12px; color: var(--text2); padding-left: 15px; position: relative; line-height: 1.55; }
+  .col-list li::before { position: absolute; left: 0; top: 2px; font-size: 10px; }
+  .col-list li.y::before { content: '✓'; color: var(--green); }
+  .col-list li.n::before { content: '✗'; color: var(--red); }
+  .col-list li.w::before { content: '~'; color: var(--amber); }
+
+  .automation-coverage { margin-bottom: 14px; }
+  .ac-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+  .ac-steps { display: flex; flex-direction: column; gap: 6px; }
+  .ac-step { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .ac-step-label { font-size: 12px; color: var(--text2); }
+  .ac-chip {
+    font-size: 9.5px; font-weight: 700; padding: 2px 8px;
+    border-radius: 3px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .chip-auto   { background: var(--green-l); color: var(--green); }
+  .chip-semi   { background: var(--amber-l); color: var(--amber); }
+  .chip-manual { background: var(--red-l);   color: var(--red); }
+
+  .oc-note {
+    font-size: 12.5px; line-height: 1.6; padding: 12px 16px;
+    border-radius: 8px; margin-top: 4px;
+  }
+  .oc-note.green { background: var(--green-l); color: var(--green); }
+  .oc-note.blue  { background: var(--blue-l);  color: var(--blue); }
+  .oc-note.amber { background: var(--amber-l); color: var(--amber); }
+
+  /* RECOMMENDATION */
+  .rec-box {
+    background: var(--green-deep);
+    color: #e8f0eb;
+    border-radius: 12px;
+    padding: 26px 28px;
+    box-shadow: var(--sh-m);
+  }
+  .rb-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; }
+  .rb-title {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 20px; font-weight: 400;
+    line-height: 1.3; margin-bottom: 12px;
+  }
+  .rb-body { font-size: 14px; line-height: 1.7; opacity: 0.85; margin-bottom: 16px; }
+
+  .rec-steps { display: flex; flex-direction: column; gap: 12px; }
+  .rs { display: flex; gap: 12px; align-items: flex-start; }
+  .rs-num {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; background: rgba(255,255,255,0.12);
+    padding: 3px 10px; border-radius: 4px; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .rs-text { font-size: 13px; line-height: 1.65; opacity: 0.9; }
+  .rs-text strong { opacity: 1; }
+
+  /* COMPARISON TABLE */
+  .comparison-table {
+    width: 100%;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: var(--sh);
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .comparison-table thead tr {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .comparison-table thead th {
+    padding: 11px 14px;
+    text-align: left;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .comparison-table thead th:first-child { width: 28%; }
+  .comparison-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .comparison-table tbody tr:last-child { border-bottom: none; }
+  .comparison-table tbody tr:hover { background: var(--surface); }
+  .comparison-table tbody td {
+    padding: 11px 14px;
+    vertical-align: middle;
+    color: var(--text2);
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+  .comparison-table tbody td:first-child {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  @media(max-width:560px) {
+    .gdpr-grid { grid-template-columns: 1fr; }
+    .oc-cols   { grid-template-columns: 1fr; }
+    .constraint-row { gap: 6px; }
+    .oc-meter-row { flex-direction: column; gap: 8px; }
+    .comparison-table { font-size: 11px; }
+    .comparison-table thead th,
+    .comparison-table tbody td { padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">Avec <em>Chaleur</em></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Start</a></li>
+      <li><a href="vergleich.html">Vergleich</a></li>
+      <li><a href="technische-analyse.html">Technische Analyse</a></li>
+      <li><a href="enterprise.html" class="is-active">Enterprise</a></li>
+    </ul>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('is-open')" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header style="margin-bottom:36px">
+    <div class="eyebrow">Avec Chaleur · Enterprise-Analyse · Feb 2026</div>
+    <h1>Automatisierung im<br><em>Enterprise-Kontext</em></h1>
+    <p class="subtitle">500+ Mitarbeiter · Eingeschränkter Rechner · Datenschutz-Analyse · Varianten</p>
+  </header>
+
+  <!-- CONTEXT BANNER -->
+  <div class="context-banner">
+    <div class="cb-label">Ausgangssituation</div>
+    <div class="cb-title">Was sich gegenüber der ersten Analyse ändert</div>
+    <div class="cb-body">
+      Großunternehmen mit 500+ Mitarbeitern bedeutet: Keine Software-Installation erlaubt, IT-Freigabeprozesse für neue Tools, interner Datenschutzbeauftragter hat Mitspracherecht, und die Person, die die Automatisierung einrichten soll, kann nur <strong>Browser + Ordnerstruktur</strong> nutzen. Das schließt selbst-gehostetes n8n aus — aber nicht alle Optionen.
+    </div>
+  </div>
+
+  <!-- CONSTRAINTS -->
+  <div>
+    <div class="sec-label">Rahmenbedingungen</div>
+    <div class="constraint-row">
+      <span class="ctag ct-red"><span class="ctag-dot"></span>Keine App-Installation möglich</span>
+      <span class="ctag ct-red"><span class="ctag-dot"></span>Kein lokaler Server einrichtbar</span>
+      <span class="ctag ct-amber"><span class="ctag-dot"></span>Nur Browser nutzbar</span>
+      <span class="ctag ct-amber"><span class="ctag-dot"></span>500+ Mitarbeiter → IT-Governance</span>
+      <span class="ctag ct-amber"><span class="ctag-dot"></span>Gehalts-/Personaldaten = sensibel</span>
+      <span class="ctag ct-green"><span class="ctag-dot"></span>Leapsome API vorhanden</span>
+      <span class="ctag ct-green"><span class="ctag-dot"></span>Personio API vorhanden</span>
+      <span class="ctag ct-green"><span class="ctag-dot"></span>Microsoft 365 vermutlich lizenziert</span>
+    </div>
+  </div>
+
+  <!-- DATENSCHUTZ -->
+  <div style="margin-bottom:40px">
+    <div class="sec-label">Datenschutz · Was die Tools wirklich machen</div>
+
+    <div class="gdpr-grid">
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-green">DSGVO ✓</span>
+          <span class="gc-name">Leapsome</span>
+        </div>
+        <ul>
+          <li class="yes">EU-Serverstandort (Frankfurt)</li>
+          <li class="yes">ISO 27001 zertifiziert</li>
+          <li class="yes">DPA standardmäßig</li>
+          <li class="yes">SCCs vorhanden</li>
+          <li class="yes">Daten verlassen Leapsome nie unkontrolliert</li>
+        </ul>
+      </div>
+
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-green">DSGVO ✓</span>
+          <span class="gc-name">Personio</span>
+        </div>
+        <ul>
+          <li class="yes">EU-Serverstandort (München)</li>
+          <li class="yes">ISO 27001 + SOC 2 Type II</li>
+          <li class="yes">DSGVO-konform by design</li>
+          <li class="yes">DPA inklusive</li>
+          <li class="yes">Besonders auf EU-Recht ausgelegt</li>
+        </ul>
+      </div>
+
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-amber">Bedingt</span>
+          <span class="gc-name">Make.com</span>
+        </div>
+        <ul>
+          <li class="yes">SOC 2 Type II + DSGVO-konform</li>
+          <li class="yes">EU-Serverstandort wählbar (Enterprise)</li>
+          <li class="yes">DPA vorhanden</li>
+          <li class="w">Gehaltsdaten fließen durch Make-Server</li>
+          <li class="w">Datenschutzbeauftragter muss prüfen</li>
+        </ul>
+      </div>
+
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-amber">Bedingt</span>
+          <span class="gc-name">Zapier</span>
+        </div>
+        <ul>
+          <li class="yes">SOC 2 + DSGVO-konform</li>
+          <li class="yes">EU-US Data Privacy Framework</li>
+          <li class="no">Kein EU-only Serverstandort möglich</li>
+          <li class="w">Daten laufen über US-Server</li>
+          <li class="no">Für sensible HR-Daten heikel im Enterprise</li>
+        </ul>
+      </div>
+
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-green">DSGVO ✓</span>
+          <span class="gc-name">Power Automate</span>
+        </div>
+        <ul>
+          <li class="yes">EU-Serverstandort (Microsoft EU)</li>
+          <li class="yes">ISO 27001, SOC 1/2, DSGVO</li>
+          <li class="yes">Teil von Microsoft 365 — oft schon lizenziert</li>
+          <li class="yes">DPA vorhanden, bereits geprüft</li>
+          <li class="yes">Stärkste Enterprise-Akzeptanz</li>
+        </ul>
+      </div>
+
+      <div class="gdpr-card">
+        <div class="gc-head">
+          <span class="gc-badge gb-green">Maximal ✓</span>
+          <span class="gc-name">n8n self-hosted</span>
+        </div>
+        <ul>
+          <li class="yes">Daten verlassen nie die eigene Infrastruktur</li>
+          <li class="yes">Vollständige Datenkontrolle</li>
+          <li class="yes">DSGVO by default</li>
+          <li class="no">Benötigt Server-Zugang / IT-Abteilung</li>
+          <li class="w">Einrichtung nur mit IT-Kooperation möglich</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="gdpr-note">
+      <strong>Wichtiger Hinweis:</strong> Bei 500+ Mitarbeitern und Gehaltsdaten als Verarbeitungsgegenstand ist eine <strong>Datenschutz-Folgenabschätzung (DSFA/DPIA)</strong> wahrscheinlich Pflicht. Jedes externe Automatisierungstool — auch Make und Zapier — muss dem Datenschutzbeauftragten vorgelegt werden. Power Automate hat hier den klaren Vorteil, weil es in vielen Unternehmen bereits freigegeben ist.
+    </div>
+  </div>
+
+  <!-- OPTIONS -->
+  <div style="margin-bottom:48px">
+    <div class="sec-label">Automatisierungsvarianten · Mit und ohne n8n</div>
+    <div class="options">
+
+      <!-- OPTION A: Power Automate -->
+      <div class="option-card" id="optA">
+        <div class="oc-header" onclick="toggle('optA')">
+          <div class="oc-rank rank-a">A</div>
+          <div class="oc-meta">
+            <div class="oc-title-row">
+              <span class="oc-title">Microsoft Power Automate</span>
+              <div class="oc-tags">
+                <span class="ot ot-green">Browser ✓</span>
+                <span class="ot ot-green">Kein Install</span>
+                <span class="ot ot-green">Enterprise-Ready</span>
+                <span class="ot ot-green">EU-Daten</span>
+              </div>
+            </div>
+            <div class="oc-desc">Wahrscheinlich bereits lizenziert. Läuft vollständig im Browser. Beste Datenschutzposition im Enterprise-Kontext. Starke IT-Akzeptanz.</div>
+            <div class="oc-meter-row">
+              <div class="oc-meter">
+                <span class="om-label">Automatisierung</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:88%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Datenschutz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:95%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Enterprise-Akzeptanz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:90%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Einrichtungsaufwand</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:55%"></div></div>
+              </div>
+            </div>
+          </div>
+          <svg class="oc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="oc-body-wrap"><div class="oc-body-clip"><div class="oc-body"><div class="oc-body-inner">
+          <div class="oc-cols">
+            <div class="col-block">
+              <div class="col-label">Vorteile</div>
+              <ul class="col-list">
+                <li class="y">Läuft im Browser — keine Installation</li>
+                <li class="y">Oft schon Teil von Microsoft 365</li>
+                <li class="y">EU-Serverstandort, ISO 27001</li>
+                <li class="y">IT-Freigabe meist bereits erteilt</li>
+                <li class="y">Personio + Leapsome per HTTP-Connector anbindbar</li>
+                <li class="y">Approval-Flow mit Outlook/Teams nativ</li>
+                <li class="y">Word-Dokumente direkt befüllbar (SharePoint)</li>
+              </ul>
+            </div>
+            <div class="col-block">
+              <div class="col-label">Einschränkungen</div>
+              <ul class="col-list">
+                <li class="w">Kein nativer Leapsome-Connector — HTTP manuell bauen</li>
+                <li class="w">Premium-Lizenz nötig für HTTP-Trigger (~15€/User/Mo)</li>
+                <li class="n">Weniger flexibel als n8n für komplexe Logik</li>
+                <li class="w">Einrichtung braucht Power-Platform-Kenntnisse</li>
+                <li class="w">Docx-Generierung braucht SharePoint-Integration</li>
+              </ul>
+            </div>
+          </div>
+          <div class="automation-coverage">
+            <div class="ac-label">Automatisierungsabdeckung dieser Variante</div>
+            <div class="ac-steps">
+              <div class="ac-step"><span class="ac-step-label">01 · Leapsome Review-Scan</span><span class="ac-chip chip-auto">Automatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">02 · Personio Daten abrufen</span><span class="ac-chip chip-auto">Automatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">03–05 · Dokument generieren</span><span class="ac-chip chip-semi">Teilautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">06 · Freigabe Harald</span><span class="ac-chip chip-auto">Strukturiert automatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">07–08 · Personio Upload + Ablage</span><span class="ac-chip chip-auto">Automatisch</span></div>
+            </div>
+          </div>
+          <div class="oc-note green">Empfehlung für diese Konstellation: Zuerst prüfen ob Power Automate (Premium) in der Lizenz enthalten ist. Falls ja, ist das die beste Lösung — Browser, EU-Daten, Enterprise-Freigabe sehr wahrscheinlich.</div>
+        </div></div></div></div>
+      </div>
+
+      <!-- OPTION B: n8n Cloud -->
+      <div class="option-card" id="optB">
+        <div class="oc-header" onclick="toggle('optB')">
+          <div class="oc-rank rank-b">B</div>
+          <div class="oc-meta">
+            <div class="oc-title-row">
+              <span class="oc-title">n8n Cloud (Browser)</span>
+              <div class="oc-tags">
+                <span class="ot ot-blue">Browser ✓</span>
+                <span class="ot ot-blue">Kein Install</span>
+                <span class="ot ot-amber">GDPR: EU möglich</span>
+                <span class="ot ot-amber">IT-Freigabe nötig</span>
+              </div>
+            </div>
+            <div class="oc-desc">n8n läuft vollständig im Browser — kein Download, keine Installation. n8n Cloud bietet EU-Serverstandort. Datenschutz-technisch vertretbar, aber IT muss einbezogen werden.</div>
+            <div class="oc-meter-row">
+              <div class="oc-meter">
+                <span class="om-label">Automatisierung</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-blue" style="width:95%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Datenschutz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:65%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Enterprise-Akzeptanz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:45%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Einrichtungsaufwand</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-blue" style="width:30%"></div></div>
+              </div>
+            </div>
+          </div>
+          <svg class="oc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="oc-body-wrap"><div class="oc-body-clip"><div class="oc-body"><div class="oc-body-inner">
+          <div class="oc-cols">
+            <div class="col-block">
+              <div class="col-label">Vorteile</div>
+              <ul class="col-list">
+                <li class="y">Vollständig Browser-basiert — kein Download</li>
+                <li class="y">Mächtigste Automatisierungsfähigkeiten</li>
+                <li class="y">EU-Serverstandort auf n8n Cloud wählbar</li>
+                <li class="y">DPA + SCCs vorhanden</li>
+                <li class="y">Native Leapsome + Personio Nodes</li>
+                <li class="y">Günstig: ab ~20€/mo</li>
+              </ul>
+            </div>
+            <div class="col-block">
+              <div class="col-label">Risiken im Enterprise</div>
+              <ul class="col-list">
+                <li class="n">Drittanbieter-SaaS — IT-Freigabe erforderlich</li>
+                <li class="n">Gehaltsdaten fließen durch n8n-Server</li>
+                <li class="w">Datenschutzbeauftragter muss zustimmen</li>
+                <li class="w">DPIA wahrscheinlich erforderlich</li>
+                <li class="w">Nicht selbst-gehostet = weniger Kontrolle</li>
+              </ul>
+            </div>
+          </div>
+          <div class="automation-coverage">
+            <div class="ac-label">Automatisierungsabdeckung dieser Variante</div>
+            <div class="ac-steps">
+              <div class="ac-step"><span class="ac-step-label">01 · Leapsome Review-Scan</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">02 · Personio Daten abrufen</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">03–05 · Dokument generieren</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">06 · Freigabe Harald</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">07–08 · Personio Upload + Ablage</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+            </div>
+          </div>
+          <div class="oc-note blue">n8n Cloud ist die technisch stärkste Option — aber im Enterprise-Kontext nur mit IT-Freigabe und DPIA umsetzbar. Falls die IT-Abteilung mitspielt, lohnt der Weg.</div>
+        </div></div></div></div>
+      </div>
+
+      <!-- OPTION C: n8n IT-gehostet -->
+      <div class="option-card" id="optC">
+        <div class="oc-header" onclick="toggle('optC')">
+          <div class="oc-rank rank-b">B+</div>
+          <div class="oc-meta">
+            <div class="oc-title-row">
+              <span class="oc-title">n8n Self-Hosted (IT-Kooperation)</span>
+              <div class="oc-tags">
+                <span class="ot ot-green">Maximaler Datenschutz</span>
+                <span class="ot ot-blue">Browser ✓</span>
+                <span class="ot ot-amber">IT muss einrichten</span>
+                <span class="ot ot-green">Daten bleiben intern</span>
+              </div>
+            </div>
+            <div class="oc-desc">n8n wird von der IT-Abteilung auf internen Servern eingerichtet. Die nutzende Person bedient es nur im Browser. Stärkste Datenschutzposition — Daten verlassen nie die Unternehmensinfrastruktur.</div>
+            <div class="oc-meter-row">
+              <div class="oc-meter">
+                <span class="om-label">Automatisierung</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-blue" style="width:95%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Datenschutz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:100%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Enterprise-Akzeptanz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:80%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Abhängigkeit von IT</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-red" style="width:90%"></div></div>
+              </div>
+            </div>
+          </div>
+          <svg class="oc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="oc-body-wrap"><div class="oc-body-clip"><div class="oc-body"><div class="oc-body-inner">
+          <div class="oc-cols">
+            <div class="col-block">
+              <div class="col-label">Vorteile</div>
+              <ul class="col-list">
+                <li class="y">Gehaltsdaten verlassen nie das Unternehmen</li>
+                <li class="y">Vollständige Datenkontrolle</li>
+                <li class="y">n8n Interface läuft im Browser</li>
+                <li class="y">Keine DPIA für externe Datenübertragung nötig</li>
+                <li class="y">Volle Automatisierungstiefe</li>
+                <li class="y">Hohe IT-Akzeptanz (Open-Source, auditierbar)</li>
+              </ul>
+            </div>
+            <div class="col-block">
+              <div class="col-label">Einschränkungen</div>
+              <ul class="col-list">
+                <li class="n">IT-Abteilung muss Server aufsetzen</li>
+                <li class="n">Nicht allein einrichtbar</li>
+                <li class="w">Zeitplan abhängig von IT-Prioritäten</li>
+                <li class="w">Netzlaufwerk-Zugriff muss konfiguriert werden</li>
+              </ul>
+            </div>
+          </div>
+          <div class="automation-coverage">
+            <div class="ac-label">Automatisierungsabdeckung dieser Variante</div>
+            <div class="ac-steps">
+              <div class="ac-step"><span class="ac-step-label">01 · Leapsome Review-Scan</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">02 · Personio Daten abrufen</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">03–05 · Dokument generieren</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">06 · Freigabe Harald</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">07–08 · Personio Upload + Ablage</span><span class="ac-chip chip-auto">Vollautomatisch</span></div>
+            </div>
+          </div>
+          <div class="oc-note green">Ideal-Szenario für den Enterprise-Kontext. Wenn die IT mitzieht, hat diese Variante die stärksten Argumente gegenüber dem Datenschutzbeauftragten.</div>
+        </div></div></div></div>
+      </div>
+
+      <!-- OPTION D: Make.com -->
+      <div class="option-card" id="optD">
+        <div class="oc-header" onclick="toggle('optD')">
+          <div class="oc-rank rank-c">C</div>
+          <div class="oc-meta">
+            <div class="oc-title-row">
+              <span class="oc-title">Make.com</span>
+              <div class="oc-tags">
+                <span class="ot ot-blue">Browser ✓</span>
+                <span class="ot ot-blue">Kein Install</span>
+                <span class="ot ot-amber">EU-Daten (Enterprise)</span>
+                <span class="ot ot-amber">IT-Freigabe nötig</span>
+              </div>
+            </div>
+            <div class="oc-desc">Browser-basiert, visuell, EU-Serverstandort auf Enterprise-Plan. Weniger mächtig als n8n, aber einfacher in der Bedienung. Datenschutz ähnlich wie n8n Cloud.</div>
+            <div class="oc-meter-row">
+              <div class="oc-meter">
+                <span class="om-label">Automatisierung</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:75%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Datenschutz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:60%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Enterprise-Akzeptanz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:50%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Einrichtungsaufwand</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-amber" style="width:40%"></div></div>
+              </div>
+            </div>
+          </div>
+          <svg class="oc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="oc-body-wrap"><div class="oc-body-clip"><div class="oc-body"><div class="oc-body-inner">
+          <div class="oc-cols">
+            <div class="col-block">
+              <div class="col-label">Vorteile</div>
+              <ul class="col-list">
+                <li class="y">Vollständig Browser-basiert</li>
+                <li class="y">EU-Serverstandort (Enterprise-Plan)</li>
+                <li class="y">SOC 2 Type II + DSGVO</li>
+                <li class="y">Visueller Scenario-Builder — einfacher als n8n</li>
+                <li class="y">Personio-Connector vorhanden</li>
+              </ul>
+            </div>
+            <div class="col-block">
+              <div class="col-label">Einschränkungen</div>
+              <ul class="col-list">
+                <li class="w">EU-Serverstandort erst ab Enterprise-Plan</li>
+                <li class="n">Kein nativer Leapsome-Connector</li>
+                <li class="n">Gehaltsdaten fließen durch Make-Server</li>
+                <li class="w">DPIA erforderlich</li>
+                <li class="w">Weniger flexibel bei komplexer Logik</li>
+              </ul>
+            </div>
+          </div>
+          <div class="automation-coverage">
+            <div class="ac-label">Automatisierungsabdeckung dieser Variante</div>
+            <div class="ac-steps">
+              <div class="ac-step"><span class="ac-step-label">01 · Leapsome Review-Scan</span><span class="ac-chip chip-auto">Automatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">02 · Personio Daten abrufen</span><span class="ac-chip chip-auto">Automatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">03–05 · Dokument generieren</span><span class="ac-chip chip-semi">Teilautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">06 · Freigabe Harald</span><span class="ac-chip chip-semi">Semi-strukturiert</span></div>
+              <div class="ac-step"><span class="ac-step-label">07–08 · Personio Upload + Ablage</span><span class="ac-chip chip-auto">Automatisch</span></div>
+            </div>
+          </div>
+          <div class="oc-note amber">Nur empfehlenswert wenn Power Automate nicht verfügbar und IT-Freigabe für Make erteilt wird. Datenschutzposition ähnlich wie n8n Cloud.</div>
+        </div></div></div></div>
+      </div>
+
+      <!-- OPTION E: Ohne externes Tool -->
+      <div class="option-card" id="optE">
+        <div class="oc-header" onclick="toggle('optE')">
+          <div class="oc-rank rank-d">D</div>
+          <div class="oc-meta">
+            <div class="oc-title-row">
+              <span class="oc-title">Ohne Automatisierungstool</span>
+              <div class="oc-tags">
+                <span class="ot ot-green">Browser ✓</span>
+                <span class="ot ot-green">Kein Tool nötig</span>
+                <span class="ot ot-red">~40% Abdeckung</span>
+                <span class="ot ot-red">Teilmanuell</span>
+              </div>
+            </div>
+            <div class="oc-desc">Was ist ohne jedes externe Automatisierungstool möglich? Nur mit Leapsome- und Personio-Bordmitteln sowie Word-Vorlagen. Weniger vollständig, aber sofort umsetzbar.</div>
+            <div class="oc-meter-row">
+              <div class="oc-meter">
+                <span class="om-label">Automatisierung</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-red" style="width:38%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Datenschutz</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:100%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Sofort umsetzbar</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-green" style="width:100%"></div></div>
+              </div>
+              <div class="oc-meter">
+                <span class="om-label">Noch manuell</span>
+                <div class="om-bar-wrap"><div class="om-bar bar-red" style="width:62%"></div></div>
+              </div>
+            </div>
+          </div>
+          <svg class="oc-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="oc-body-wrap"><div class="oc-body-clip"><div class="oc-body"><div class="oc-body-inner">
+          <div class="oc-cols">
+            <div class="col-block">
+              <div class="col-label">Was sofort möglich ist</div>
+              <ul class="col-list">
+                <li class="y">Leapsome: Automatischer Export-Report per CSV (Scheduled Export)</li>
+                <li class="y">Personio: Gehalts-Export als CSV — kein manuelles Nachschlagen</li>
+                <li class="y">Word-Vorlage mit Schnellbausteine / Feldfunktionen optimieren</li>
+                <li class="y">Outlook: Standard-E-Mail-Vorlage für Harald (kein Formulieren)</li>
+                <li class="y">Personio: Geplanter Notification-Report an dich täglich</li>
+                <li class="y">Checkliste als Excel/Word für alle Schritte → kein Vergessen</li>
+              </ul>
+            </div>
+            <div class="col-block">
+              <div class="col-label">Was manuell bleibt</div>
+              <ul class="col-list">
+                <li class="n">Review-Scan bleibt semiautomatisch (Export lesen)</li>
+                <li class="n">Dokument befüllen (Word-Felder erleichtern, aber kein Auto)</li>
+                <li class="n">Differenzberechnung (kann in Excel-Formel gelöst werden)</li>
+                <li class="n">Netzlaufwerk-Ablage manuell</li>
+                <li class="n">Personio-Upload manuell</li>
+              </ul>
+            </div>
+          </div>
+          <div class="automation-coverage">
+            <div class="ac-label">Abdeckung ohne externes Tool · ~40% Zeitersparnis</div>
+            <div class="ac-steps">
+              <div class="ac-step"><span class="ac-step-label">01 · Leapsome Review-Scan</span><span class="ac-chip chip-semi">Halbautomatisch</span></div>
+              <div class="ac-step"><span class="ac-step-label">02 · Personio Daten abrufen</span><span class="ac-chip chip-semi">Per CSV-Export</span></div>
+              <div class="ac-step"><span class="ac-step-label">03–05 · Dokument generieren</span><span class="ac-chip chip-manual">Manuell (verbessert)</span></div>
+              <div class="ac-step"><span class="ac-step-label">06 · Freigabe Harald</span><span class="ac-chip chip-semi">Vorlage-Mail</span></div>
+              <div class="ac-step"><span class="ac-step-label">07–08 · Personio Upload + Ablage</span><span class="ac-chip chip-manual">Manuell</span></div>
+            </div>
+          </div>
+          <div class="oc-note amber">Empfehlung als Übergangslösung: Sofort umsetzen während Power Automate / IT-Freigabe geklärt wird. Die Zeit gewinnen und Fehler minimieren, ohne auf Freigabe zu warten.</div>
+        </div></div></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RECOMMENDATION -->
+  <div class="rec-box" style="margin-bottom:40px">
+    <div class="rb-label">Empfehlung für diese Konstellation</div>
+    <div class="rb-title">Zweistufige Strategie: Jetzt + Mittelfristig</div>
+    <div class="rb-body">Im Enterprise-Kontext mit eingeschränktem Rechner ist der direkteste Weg eine Zwei-Stufen-Strategie.</div>
+    <div class="rec-steps">
+      <div class="rs">
+        <span class="rs-num">Jetzt</span>
+        <span class="rs-text"><strong>Variante D sofort umsetzen:</strong> Leapsome CSV-Export einrichten, Personio-Gehaltsreport anlegen, Word-Vorlage mit Schnellbausteinen optimieren, Outlook-Mailvorlage für Harald erstellen. Kein Tool nötig, kein IT-Ticket. ~40% Zeitersparnis sofort.</span>
+      </div>
+      <div class="rs">
+        <span class="rs-num">Prüfen</span>
+        <span class="rs-text"><strong>Microsoft 365 Lizenz prüfen:</strong> Ist Power Automate Premium bereits in der Lizenz? Das klärt sich oft in 1 E-Mail an die IT. Falls ja, ist Variante A die beste Option — kein neuer Freigabeprozess nötig.</span>
+      </div>
+      <div class="rs">
+        <span class="rs-num">Mittelfristig</span>
+        <span class="rs-text"><strong>Variante A oder B+ umsetzen:</strong> Power Automate (falls lizenziert) oder n8n self-hosted mit IT-Kooperation. Beide liefern ~95% Automatisierungsabdeckung mit starker Datenschutzposition.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="sec-label">Übersicht auf einen Blick</div>
+  <table class="comparison-table" style="margin-bottom:0">
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Browser?</th>
+        <th>Datenschutz</th>
+        <th>Automatis.</th>
+        <th>IT-Freigabe</th>
+        <th>Kosten/Mo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>A · Power Automate</td>
+        <td>✓ Ja</td>
+        <td>★★★★★ EU</td>
+        <td>~88%</td>
+        <td>Oft bereits erteilt</td>
+        <td>~15€/User</td>
+      </tr>
+      <tr>
+        <td>B+ · n8n Self-hosted (IT)</td>
+        <td>✓ Ja</td>
+        <td>★★★★★ Intern</td>
+        <td>~95%</td>
+        <td>IT muss einrichten</td>
+        <td>~0–20€</td>
+      </tr>
+      <tr>
+        <td>B · n8n Cloud</td>
+        <td>✓ Ja</td>
+        <td>★★★★ EU möglich</td>
+        <td>~95%</td>
+        <td>Neu erforderlich</td>
+        <td>~20€</td>
+      </tr>
+      <tr>
+        <td>C · Make.com</td>
+        <td>✓ Ja</td>
+        <td>★★★ EU (Enterprise)</td>
+        <td>~80%</td>
+        <td>Neu erforderlich</td>
+        <td>~20–40€</td>
+      </tr>
+      <tr>
+        <td>D · Ohne Tool (Bordmittel)</td>
+        <td>✓ Ja</td>
+        <td>★★★★★ Intern</td>
+        <td>~40%</td>
+        <td>Keine</td>
+        <td>0€</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('is-open');
+  }
+</script>
+</body>
+</html>

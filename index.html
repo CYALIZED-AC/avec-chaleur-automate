@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Avec Chaleur · Automatisierungsanalyse</title>
+<meta name="description" content="Automatisierungsanalyse für Gehaltsprozesse — Vergleich, technische Analyse und Enterprise-Optionen.">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .hero {
+    padding-top: 24px;
+    margin-bottom: 56px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    margin-bottom: 14px;
+  }
+  .hero .subtitle {
+    max-width: 540px;
+    font-size: 15px;
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+
+  .card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+    box-shadow: var(--sh);
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 12px 0 0 12px;
+    transition: background 0.3s;
+  }
+  .card:hover {
+    border-color: var(--bh);
+    box-shadow: var(--sh-m);
+    transform: translateY(-2px);
+  }
+
+  .card-green::before  { background: var(--green); }
+  .card-blue::before   { background: var(--blue); }
+  .card-amber::before  { background: var(--amber); }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .card-green .card-icon  { background: var(--green-l); }
+  .card-blue .card-icon   { background: var(--blue-l); }
+  .card-amber .card-icon  { background: var(--amber-l); }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .card-body {
+    font-size: 13.5px;
+    color: var(--text2);
+    line-height: 1.65;
+    margin-bottom: 14px;
+  }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .card-tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 4px;
+  }
+  .card-green .card-tag  { background: var(--green-l); color: var(--green); }
+  .card-blue .card-tag   { background: var(--blue-l);  color: var(--blue); }
+  .card-amber .card-tag  { background: var(--amber-l); color: var(--amber); }
+
+  .card-arrow {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: var(--muted);
+    transition: transform 0.25s, color 0.2s;
+  }
+  .card:hover .card-arrow {
+    transform: translateY(-50%) translateX(3px);
+    color: var(--text2);
+  }
+
+  .footer-note {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 560px) {
+    .card { padding: 18px 20px; }
+    .card-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">Avec <em>Chaleur</em></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="is-active">Start</a></li>
+      <li><a href="vergleich.html">Vergleich</a></li>
+      <li><a href="technische-analyse.html">Technische Analyse</a></li>
+      <li><a href="enterprise.html">Enterprise</a></li>
+    </ul>
+    <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('is-open')" aria-label="Menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Avec Chaleur · Automatisierungsanalyse · Feb 2026</div>
+    <h1>Gehaltsprozesse<br><em>neu gedacht</em></h1>
+    <p class="subtitle">Vom manuellen 8-Schritte-Prozess zur Ein-Klick-Freigabe. Drei Perspektiven, ein Ziel: weniger Fehler, weniger Aufwand, mehr Nachvollziehbarkeit.</p>
+  </div>
+
+  <div class="sec-label">Analysen</div>
+
+  <div class="cards">
+
+    <a href="vergleich.html" class="card-link">
+      <div class="card card-green">
+        <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <div class="card-header">
+          <div class="card-icon">↔</div>
+          <div class="card-title">Was ändert sich bei einer Gehaltsanpassung?</div>
+        </div>
+        <div class="card-body">
+          Dieselben 8 Schritte — drei verschiedene Szenarien. Interaktiver Vergleich zwischen dem heutigen Prozess, schnellen Verbesserungen ohne neues Tool und der vollautomatischen Lösung mit n8n.
+        </div>
+        <div class="card-tags">
+          <span class="card-tag">Interaktiv</span>
+          <span class="card-tag">8 Schritte</span>
+          <span class="card-tag">3 Szenarien</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="technische-analyse.html" class="card-link">
+      <div class="card card-blue">
+        <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <div class="card-header">
+          <div class="card-icon">{ }</div>
+          <div class="card-title">API-Realität & Tool-Stack</div>
+        </div>
+        <div class="card-body">
+          Was können die APIs von Leapsome und Personio wirklich? Welche Endpunkte existieren, welche Einschränkungen gibt es — und wie sieht der technische Stack für die Automatisierung aus?
+        </div>
+        <div class="card-tags">
+          <span class="card-tag">API-Analyse</span>
+          <span class="card-tag">Tool-Stack</span>
+          <span class="card-tag">Offene Fragen</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="enterprise.html" class="card-link">
+      <div class="card card-amber">
+        <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <div class="card-header">
+          <div class="card-icon">🏢</div>
+          <div class="card-title">Automatisierung im Enterprise-Kontext</div>
+        </div>
+        <div class="card-body">
+          500+ Mitarbeiter, eingeschränkter Rechner, Datenschutz. Welche Automatisierungsvarianten funktionieren unter diesen Bedingungen? DSGVO-Analyse, Optionen-Vergleich und Empfehlung.
+        </div>
+        <div class="card-tags">
+          <span class="card-tag">Datenschutz</span>
+          <span class="card-tag">5 Varianten</span>
+          <span class="card-tag">Enterprise</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer-note">
+    Avec Chaleur · Automatisierungsanalyse · Februar 2026
+  </div>
+
+</div>
+
+</body>
+</html>
